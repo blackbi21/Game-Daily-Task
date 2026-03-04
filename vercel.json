@@ -5,4 +5,8 @@
             "destination": "/index.html"
         }
     ]
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 59acb56 (feat: Redesign WalletCard with Goal Progress KPI thresholds)
