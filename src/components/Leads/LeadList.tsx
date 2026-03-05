@@ -24,20 +24,32 @@ export const LeadList: React.FC = () => {
     // Separate normal and gold mine leads
     const normalLeads = state.leads.filter(l => !l.is_gold_mine);
     const goldMineLeads = state.leads.filter(l => l.is_gold_mine);
-
     const activeLeads = tabValue === 0 ? normalLeads : goldMineLeads;
 
-    // Sort: New leads first, then Negotiating
-    const sortedLeads = [...activeLeads].sort((a, b) => {
-        if (a.status === 'Mới' && b.status !== 'Mới') return -1;
-        if (a.status !== 'Mới' && b.status === 'Mới') return 1;
-        if (a.status === 'Đang thương lượng' && b.status !== 'Đang thương lượng') return -1;
-        if (a.status !== 'Đang thương lượng' && b.status === 'Đang thương lượng') return 1;
-        return 0;
-    });
+    // Segment Leads
+    const newLeads = activeLeads.filter(l => l.status === 'Mới');
+    const negotiatingLeads = activeLeads.filter(l => l.status === 'Đang thương lượng');
+    const successLeads = activeLeads.filter(l => l.status === 'Thành công');
+    const failedLeads = activeLeads.filter(l => l.status === 'Thất bại');
+
+    const renderSection = (title: string, leads: Lead[], color: string) => {
+        if (leads.length === 0) return null;
+        return (
+            <Box sx={{ mt: 3 }}>
+                <Typography variant="subtitle2" sx={{ color, fontWeight: 'bold', mb: 1.5, textTransform: 'uppercase', pl: 1, borderLeft: `4px solid ${color}` }}>
+                    {title} ({leads.length})
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {leads.map(lead => (
+                        <LeadCard key={lead.id} lead={lead} onQuickUpdate={handleQuickUpdate} />
+                    ))}
+                </Box>
+            </Box>
+        );
+    };
 
     return (
-        <Box sx={{ mt: 3, width: '100%' }}>
+        <Box sx={{ mt: 3, width: '100%', pb: 10 }}>
             <Box sx={{ mb: 2 }}>
                 <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'var(--md-sys-color-on-background)', mb: 1 }}>
                     Danh sách Khách hàng
@@ -85,11 +97,13 @@ export const LeadList: React.FC = () => {
                 </Tabs>
             </Box>
 
-            {sortedLeads.map(lead => (
-                <LeadCard key={lead.id} lead={lead} onQuickUpdate={handleQuickUpdate} />
-            ))}
+            {/* Sections Rendering */}
+            {renderSection('Khách hàng mới', newLeads, 'var(--md-sys-color-primary)')}
+            {renderSection('Đang Thương lượng', negotiatingLeads, 'var(--md-sys-color-tertiary)')}
+            {renderSection('Thành công', successLeads, 'var(--md-sys-color-secondary)')}
+            {renderSection('Thất bại', failedLeads, 'var(--md-sys-color-error)')}
 
-            {sortedLeads.length === 0 && (
+            {activeLeads.length === 0 && (
                 <Typography variant="body2" sx={{ color: 'var(--md-sys-color-on-surface-variant)', textAlign: 'center', py: 4 }}>
                     {tabValue === 0 ? "Không có khách hàng mới nào." : "Chưa có mỏ vàng nào được khai quật."}
                 </Typography>
@@ -105,3 +119,4 @@ export const LeadList: React.FC = () => {
         </Box>
     );
 };
+
